@@ -10,31 +10,22 @@ import (
 )
 
 var dockerLexer = lexer.MustSimple([]lexer.Rule{
-	{`Ident`, `[a-zA-Z][a-zA-Z_\d]*`, nil},
-	{`String`, `"(?:\\.|[^"])*"`, nil},
-	{`Float`, `\d+(?:\.\d+)?`, nil},
-	{`Punct`, `[][=]`, nil},
-	{"comment", `[#;][^\n]*`, nil},
-	{"whitespace", `\s+`, nil},
+	{"BaseIdent", `^FROM`, nil},
+	{"BaseValue", `[a-zA-z]*:\d+\.\d+\.\d+\-[a-zA-z]*`, nil},
+	{"whitespace", `\s{1}`, nil},
 })
 
 type DOCKERFILE struct {
-	Start []*From `@@*`
+	From *From `@@`
 }
 
 type From struct {
-	Key   string `@Ident`
-	Value *Value `@@`
-}
-
-type Value struct {
-	Pos    lexer.Position
-	String *string ` @String`
+	Key   string `@BaseIdent`
+	Value string `@BaseValue`
 }
 
 var parser = participle.MustBuild(&DOCKERFILE{},
 	participle.Lexer(dockerLexer),
-	participle.Unquote("String"),
 )
 
 func main() {
