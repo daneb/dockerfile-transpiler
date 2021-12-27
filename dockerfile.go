@@ -14,7 +14,10 @@ var dockerLexer = lexer.MustSimple([]lexer.Rule{
 	{"BaseValue", `[a-zA-Z]*:\d+\.\d+\.\d+\-[a-zA-Z]*`, nil},
 	{"RunDirective", `^RUN`, nil},
 	{"WorkDirective", `^WORKDIR`, nil},
+	{"CopyDirective", `^COPY`, nil},
+	{"EnvDirective", `^ENV`, nil},
 	{"Directory", `/\w+`, nil},
+	{"CopyDirectory", `\.\s/\w+/`, nil},
 	{"Word", `-?\w+`, nil},
 	{"Options", `--\w+`, nil},
 	{`String`, `"(?:\\.|[^"])*"`, nil},
@@ -24,9 +27,12 @@ var dockerLexer = lexer.MustSimple([]lexer.Rule{
 })
 
 type DOCKERFILE struct {
-	From    *From    `@@`
-	Run     []*Run   `@@*`
-	Workdir *WorkDir `@@`
+	From       *From         `@@`
+	ComplexRun []*ComplexRun `@@*`
+	WorkDir    *WorkDir      `@@`
+	Copy       *Copy         `@@`
+	Env        *Env          `@@`
+	SimpleRun  []*SimpleRun  `@@*`
 }
 
 type From struct {
@@ -34,19 +40,39 @@ type From struct {
 	Value string `@BaseValue`
 }
 
+type ComplexRun struct {
+	Key   string `@RunDirective`
+	Value *Value `@@*`
+}
+
+type SimpleRun struct {
+	Key   string `@RunDirective`
+	Value Words  `@@*`
+}
+
+type Words struct {
+	Words string `@Word`
+}
+
 type WorkDir struct {
 	Key   string `@WorkDirective`
 	Value string `@Directory`
 }
 
-type Run struct {
-	Key   string `@RunDirective`
-	Value *Value `@@*`
+type Copy struct {
+	Key   string `@CopyDirective`
+	Value string `@CopyDirectory`
+}
+
+type Env struct {
+	Key   string `@EnvDirective`
+	Value string `@Word @Directory`
 }
 
 type Value struct {
 	Exe      string     `@Word @Word @Options @Options`
 	Packages []*Package `@@*`
+	Command  string     `| @Word`
 }
 
 type Package struct {
