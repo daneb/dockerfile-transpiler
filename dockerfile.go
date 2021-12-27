@@ -14,7 +14,8 @@ var dockerLexer = lexer.MustSimple([]lexer.Rule{
 	{"BaseValue", `[a-zA-Z]*:\d+\.\d+\.\d+\-[a-zA-Z]*`, nil},
 	{"RunDirective", `^RUN`, nil},
 	{"WorkDirective", `^WORKDIR`, nil},
-	{"Word", `/?-?\w+`, nil},
+	{"Directory", `/\w+`, nil},
+	{"Word", `-?\w+`, nil},
 	{"Options", `--\w+`, nil},
 	{`String`, `"(?:\\.|[^"])*"`, nil},
 	{"whitespace", `\s`, nil},
@@ -35,7 +36,7 @@ type From struct {
 
 type WorkDir struct {
 	Key   string `@WorkDirective`
-	Value string `@Word`
+	Value string `@Directory`
 }
 
 type Run struct {
