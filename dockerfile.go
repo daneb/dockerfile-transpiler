@@ -11,12 +11,15 @@ import (
 
 var dockerLexer = lexer.MustSimple([]lexer.Rule{
 	{"BaseIdent", `^FROM`, nil},
-	{"BaseValue", `[a-zA-z]*:\d+\.\d+\.\d+\-[a-zA-z]*`, nil},
+	{"BaseValue", `[a-zA-Z]*:\d+\.\d+\.\d+\-[a-zA-Z]*`, nil},
+	{"RunDirective", `^RUN`, nil},
 	{"whitespace", `\s{1}`, nil},
+	{"String", `[a-zA-Z]*\s[a-zA-Z]*`, nil},
 })
 
 type DOCKERFILE struct {
 	From *From `@@`
+	Run  *Run  `@@*`
 }
 
 type From struct {
@@ -24,8 +27,14 @@ type From struct {
 	Value string `@BaseValue`
 }
 
+type Run struct {
+	Key   string `@RunDirective`
+	Value string `@String`
+}
+
 var parser = participle.MustBuild(&DOCKERFILE{},
 	participle.Lexer(dockerLexer),
+	participle.Unquote(),
 )
 
 func main() {
