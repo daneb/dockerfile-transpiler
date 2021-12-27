@@ -21,7 +21,7 @@ func TestRUN(t *testing.T) {
 	err := parser.ParseString("", `
 FROM ruby:3.0.3-alpine
 
-RUN apk add`, dockerfile)
+RUN apk add --update --virtual`, dockerfile)
 	require.NoError(t, err)
 	repr.Println(dockerfile)
 }

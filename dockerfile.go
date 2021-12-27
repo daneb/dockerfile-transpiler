@@ -13,13 +13,15 @@ var dockerLexer = lexer.MustSimple([]lexer.Rule{
 	{"BaseIdent", `^FROM`, nil},
 	{"BaseValue", `[a-zA-Z]*:\d+\.\d+\.\d+\-[a-zA-Z]*`, nil},
 	{"RunDirective", `^RUN`, nil},
+	{"Word", `\w+`, nil},
+	{"Options", `--\w+`, nil},
 	{"whitespace", `\s{1}`, nil},
-	{"String", `[a-zA-Z]*\s[a-zA-Z]*`, nil},
+	{`String`, `"(?:\\.|[^"])*"`, nil},
 })
 
 type DOCKERFILE struct {
-	From *From `@@`
-	Run  *Run  `@@*`
+	From    *From  `@@`
+	Runners []*Run `@@*`
 }
 
 type From struct {
@@ -28,8 +30,14 @@ type From struct {
 }
 
 type Run struct {
-	Key   string `@RunDirective`
-	Value string `@String`
+	Key string `@RunDirective`
+	Cmd *Value `@@`
+}
+
+type Value struct {
+	Exe     string `@Word`
+	Action  string `@Word`
+	Options string `@Options @Options`
 }
 
 var parser = participle.MustBuild(&DOCKERFILE{},
