@@ -18,15 +18,15 @@ var dockerLexer = lexer.MustSimple([]lexer.Rule{
 	{"EnvDirective", `^ENV`, nil},
 	{"EntryPointDirective", `^ENTRYPOINT`, nil},
 	{"CmdDirective", `^CMD`, nil},
+	{"ExposeDirective", `^EXPOSE`, nil},
 	{"Directory", `/\w+`, nil},
 	{"CopyDirectory", `\.\s/\w+/`, nil},
 	{"Word", `-?\w+`, nil},
 	{"AppToRun", `\["\w+/\w+"\]`, nil},
 	{"Options", `--\w+`, nil},
-	{`String`, `"(?:\\.|[^"])*"`, nil},
-	{`StringArgs`, `\[[\s?"-?\w?",?]+\s?]`, nil},
-	{`Ip`, ` (\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}`, nil},
-	{`Char`, `\w`, nil},
+	{"String", `"(?:\\.|[^"])*"`, nil},
+	{"StringArgs", `\[[\s?"-?\w?",?]+\s?]`, nil},
+	{"Port", `\s[0-9]+`, nil},
 	{"whitespace", `\s`, nil},
 	{"multiline", `\\\n`, nil},
 	{"EOL", `[\n\r]+`, nil},
@@ -41,6 +41,7 @@ type DOCKERFILE struct {
 	SimpleRun  []*SimpleRun  `@@*`
 	EntryPoint *EntryPoint   `@@`
 	Cmd        *Cmd          `@@`
+	Expose     *Expose       `@@`
 }
 
 type From struct {
@@ -72,6 +73,11 @@ type Cmd struct {
 	Arguments string `@StringArgs`
 }
 
+type Expose struct {
+	Key   string `@ExposeDirective`
+	Value string `@Port`
+}
+
 type WorkDir struct {
 	Key   string `@WorkDirective`
 	Value string `@Directory`
@@ -85,12 +91,6 @@ type Copy struct {
 type Env struct {
 	Key   string `@EnvDirective`
 	Value string `@Word @Directory`
-}
-
-type Argument struct {
-	Arg  *string     `	@String`
-	Ip   *string     `| @Ip`
-	List []*Argument `| "[" (@@)? "]"`
 }
 
 type Value struct {

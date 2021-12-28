@@ -32,6 +32,8 @@ RUN bundle install
 
 ENTRYPOINT ["bin/rails"]
 CMD [ "s","-b","0.0.0.0" ]
+
+EXPOSE 3000
 `, dockerfile)
 	require.NoError(t, err)
 	repr.Println(dockerfile)
