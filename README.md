@@ -11,7 +11,7 @@ A conversion of a Dockerfile into Go values (abstract syntax tree).
 
 Consider trying to build security automation around Dockerfiles. The system would review multiple repositories and their associated Dockerfiles, trying to look for mis-configurations or company policy violations. However pattern matching (regex) would only provide a certain level of aid, and the developer would have to understand a vast array of permutations in configuration.
 
-Using the process of a transpiler, we can leverage off tokenization (lexer) and parsing (parsing) to build an AST that is easy to work with in your language of choice and at the same time give context.
+Using the process of a transpiler, we can leverage off tokenization (lexer) and parsing (applying grammar rules) to build an AST that is easy to work with in your language of choice and at the same time give context.
 
 ## Usage
 
