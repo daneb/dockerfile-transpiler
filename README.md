@@ -3,6 +3,16 @@
 A GoLang transpiler for Dockerfiles.
 It leverages of [Participle](https://github.com/alecthomas/participle).
 
+The transpiler relies on distinct lexing and parsing phases. The lexer takes raw bytes and produces tokens which the parser consumes. The parser transforms these tokens into Go values.
+
+A conversion of a Dockerfile into Go values (abstract syntax tree).
+
+## Why?
+
+Consider trying to build security automation around Dockerfiles. The system would review multiple repositories and their associated Dockerfiles, trying to look for mis-configurations or company policy violations. However pattern matching (regex) would only provide a certain level of aid, and the developer would have to understand a vast array of permutations in configuration.
+
+Using the process of a transpiler, we can leverage off tokenization (lexer) and parsing (parsing) to build an AST that is easy to work with in your language of choice and at the same time give context.
+
 ## Usage
 
 Supported Dockerfile directives are: [From](https://docs.docker.com/engine/reference/builder/#from), [Run](https://docs.docker.com/engine/reference/builder/#run), [WorkDir](https://docs.docker.com/engine/reference/builder/#workdir), [Env](https://docs.docker.com/engine/reference/builder/#env), [EntryPoint](https://docs.docker.com/engine/reference/builder/#entrypoint), [Cmd](https://docs.docker.com/engine/reference/builder/#cmd) and [Expose](https://docs.docker.com/engine/reference/builder/#expose).
