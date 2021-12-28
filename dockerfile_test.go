@@ -30,6 +30,8 @@ RUN yarn install
 RUN gem install bundler
 RUN bundle install
 
+ENTRYPOINT ["bin/rails"]
+CMD [ "s","-b","0.0.0.0" ]
 `, dockerfile)
 	require.NoError(t, err)
 	repr.Println(dockerfile)
