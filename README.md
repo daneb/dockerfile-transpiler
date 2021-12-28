@@ -3,6 +3,112 @@
 A GoLang transpiler for Dockerfiles.
 It leverages of [Participle](https://github.com/alecthomas/participle).
 
+## Usage
+
+Supported Dockerfile directives are: [From](https://docs.docker.com/engine/reference/builder/#from), [Run](https://docs.docker.com/engine/reference/builder/#run), [WorkDir](https://docs.docker.com/engine/reference/builder/#workdir), [Env](https://docs.docker.com/engine/reference/builder/#env), [EntryPoint](https://docs.docker.com/engine/reference/builder/#entrypoint), [Cmd](https://docs.docker.com/engine/reference/builder/#cmd) and [Expose](https://docs.docker.com/engine/reference/builder/#expose).
+
+### Grammar
+
+```go
+type DOCKERFILE struct {
+	From       *From         `@@`
+	ComplexRun []*ComplexRun `@@*`
+	WorkDir    *WorkDir      `@@`
+	Copy       *Copy         `@@`
+	Env        *Env          `@@`
+	SimpleRun  []*SimpleRun  `@@*`
+	EntryPoint *EntryPoint   `@@`
+	Cmd        *Cmd          `@@`
+	Expose     *Expose       `@@`
+}
+
+type From struct {
+	Key   string `@BaseIdent`
+	Value string `@BaseValue`
+}
+
+type ComplexRun struct {
+	Key   string `@RunDirective`
+	Value *Value `@@*`
+}
+
+type SimpleRun struct {
+	Key   string `@RunDirective`
+	Value Words  `@@*`
+}
+
+type Words struct {
+	Words string `@Word`
+}
+
+type EntryPoint struct {
+	Key   string `@EntryPointDirective`
+	Value string `@AppToRun`
+}
+
+type Cmd struct {
+	Key       string `@CmdDirective`
+	Arguments string `@StringArgs`
+}
+
+type Expose struct {
+	Key   string `@ExposeDirective`
+	Value string `@Port`
+}
+
+type WorkDir struct {
+	Key   string `@WorkDirective`
+	Value string `@Directory`
+}
+
+type Copy struct {
+	Key   string `@CopyDirective`
+	Value string `@CopyDirectory`
+}
+
+type Env struct {
+	Key   string `@EnvDirective`
+	Value string `@Word @Directory`
+}
+
+type Value struct {
+	Exe      string     `@Word @Word @Options @Options`
+	Packages []*Package `@@*`
+	Command  string     `| @Word`
+}
+
+type Package struct {
+	Dependency string `@Word`
+}
+```
+
+### Lexer Rules
+
+```go
+var dockerLexer = lexer.MustSimple([]lexer.Rule{
+	{"BaseIdent", `^FROM`, nil},
+	{"BaseValue", `[a-zA-Z]*:\d+\.\d+\.\d+\-[a-zA-Z]*`, nil},
+	{"RunDirective", `^RUN`, nil},
+	{"WorkDirective", `^WORKDIR`, nil},
+	{"CopyDirective", `^COPY`, nil},
+	{"EnvDirective", `^ENV`, nil},
+	{"EntryPointDirective", `^ENTRYPOINT`, nil},
+	{"CmdDirective", `^CMD`, nil},
+	{"ExposeDirective", `^EXPOSE`, nil},
+	{"Directory", `/\w+`, nil},
+	{"CopyDirectory", `\.\s/\w+/`, nil},
+	{"Word", `-?\w+`, nil},
+	{"AppToRun", `\["\w+/\w+"\]`, nil},
+	{"Options", `--\w+`, nil},
+	{"String", `"(?:\\.|[^"])*"`, nil},
+	{"StringArgs", `\[[\s?"-?\w?",?]+\s?]`, nil},
+	{"Port", `\s[0-9]+`, nil},
+	{"whitespace", `\s`, nil},
+	{"multiline", `\\\n`, nil},
+	{"EOL", `[\n\r]+`, nil},
+})
+```
+
 ## Test
 
 ```sh
